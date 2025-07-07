@@ -4,14 +4,10 @@ const AuthContext = createContext();
 
 // Basit bir localStorage admin kontrolü (sadece kurucu admin)
 function getInitialRole(userData) {
-  // Kurucu kontrolü (isim veya e-posta)
-  if (
-    userData?.name?.toLowerCase() === 'özgür dermanlı' ||
-    userData?.email?.toLowerCase() === 'ozgurdermanli@example.com'
-  ) {
+  // Sadece belirli e-posta founder olabilir
+  if (userData?.email?.toLowerCase() === 'ozgurxspeaktr@gmail.com') {
     return 'founder';
   }
-  // Diğer tüm kullanıcılar user rolü alır
   return 'user';
 }
 
