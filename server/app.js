@@ -3,9 +3,68 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
+const session = require('express-session');
+require('./config/passport'); // Configure passport (side effect)
+const passport = require('passport'); // Get the configured passport instance
+const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
+const ChatMessage = require('./models/ChatMessage'); // EKLENDİ
+
+console.log('MongoDB URI:', process.env.MONGODB_URI || 'mongodb://mongo:YvFJGbyNxePZwHwdgsgBvObpeRVpdhkr@shuttle.proxy.rlwy.net:14555');
+
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://mongo:YvFJGbyNxePZwHwdgsgBvObpeRVpdhkr@shuttle.proxy.rlwy.net:14555', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('✅ MongoDB bağlantısı başarılı!'))
+.catch(err => {
+  console.error('❌ MongoDB bağlantı hatası:', err);
+  console.error('MongoDB URI:', process.env.MONGODB_URI);
+});
 
 const app = express();
-app.use(cors());
+
+// Debug: Environment variables
+console.log('Environment variables:');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- MONGODB_URI:', process.env.MONGODB_URI ? '***' : 'undefined');
+console.log('- PORT:', process.env.PORT);
+
+// Body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(cors({
+  origin: ['https://notarium.tr'],
+  credentials: true
+}));
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'gizli',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+  cookie: {
+    secure: true,
+    sameSite: 'none',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 saat
+  }
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Test endpoint
+app.get('/test', (req, res) => {
+  res.json({ 
+    message: 'Backend is running!',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV
+  });
+});
+
+app.use('/auth', require('./routes/auth'));
+app.use('/api/notes', require('./routes/notes'));
+app.use('/api/chat', require('./routes/chat'));
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -43,13 +102,20 @@ io.on('connection', (socket) => {
   });
 
   // Kanal mesajlarını gönder
-  socket.on('joinChannel', (channel) => {
+  socket.on('joinChannel', async (channel) => {
     socket.join(channel);
-    socket.emit('chatHistory', channelMessages[channel] || []);
+    // --- YENİ: Kanal geçmişini MongoDB'den çek ---
+    try {
+      const messages = await ChatMessage.find({ channel }).populate('user', 'firstName lastName email').sort({ createdAt: 1 });
+      socket.emit('chatHistory', messages);
+    } catch (err) {
+      console.error('Kanal geçmişi alınamadı:', err);
+      socket.emit('chatHistory', []);
+    }
   });
 
   // Mesaj gönderildiğinde
-  socket.on('sendMessage', ({ channel, message }) => {
+  socket.on('sendMessage', async ({ channel, message }) => {
     // Etkinlik Duyuruları kanalına sadece adminler mesaj gönderebilir
     if (channel === 'etkinlik-duyurular') {
       const sender = Object.values(onlineUsers).find(u => u.id === message.id || u.name === message.user);
@@ -58,9 +124,21 @@ io.on('connection', (socket) => {
         return;
       }
     }
-    if (!channelMessages[channel]) channelMessages[channel] = [];
-    channelMessages[channel].push(message);
-    io.to(channel).emit('newMessage', message);
+    // --- YENİ: Mesajı MongoDB'ye kaydet ---
+    try {
+      // user alanı: message.userId (frontend'den ObjectId gelmeli!)
+      const savedMsg = await ChatMessage.create({
+        channel,
+        user: message.userId, // ObjectId olmalı
+        message: message.message
+      });
+      // Kullanıcı bilgisiyle populate et
+      const populatedMsg = await ChatMessage.findById(savedMsg._id).populate('user', 'firstName lastName email');
+      io.to(channel).emit('newMessage', populatedMsg);
+    } catch (err) {
+      console.error('Chat mesajı MongoDB\'ye kaydedilemedi:', err);
+      socket.emit('errorMessage', 'Mesaj kaydedilemedi.');
+    }
   });
 
   // Admin tarafından kullanıcıyı banla
