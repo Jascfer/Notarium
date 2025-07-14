@@ -22,9 +22,10 @@ BACKEND_URL=https://notarium-backend-production.up.railway.app
 Railway'de frontend projeniz için şu environment variables'ları ayarlayın:
 
 ```env
-NEXT_PUBLIC_BACKEND_URL=https://notarium-backend-production.up.railway.app
 NEXT_PUBLIC_SOCKET_URL=https://notarium-backend-production.up.railway.app
 ```
+
+**NOT:** `NEXT_PUBLIC_BACKEND_URL` environment variable'ını **SİLİN** - frontend artık local API routes kullanıyor.
 
 ## Cloudflare Ayarları
 
@@ -108,4 +109,5 @@ node create-test-user.js
 2. **Cloudflare ile test** yaparken sadece `notarium.tr` üzerinden test edin
 3. **HTTPS** kullanımı zorunlu (Railway & Cloudflare)
 4. **Cookie domain** ayarları cross-domain için optimize edilmeli
-5. **Frontend artık local API routes** kullanıyor, direct backend calls yok 
+5. **Frontend artık local API routes** kullanıyor, direct backend calls yok
+6. **NEXT_PUBLIC_BACKEND_URL environment variable'ını SİLİN** - bu CORS sorunlarına neden oluyor 
