@@ -3,13 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   
-  // Environment variables
+  // Environment variables - Cloudflare ile uyumlu
   env: {
-    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'https://notarium-backend-production.up.railway.app',
-    NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL || 'https://notarium-backend-production.up.railway.app',
+    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'https://notarium.tr',
+    NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL || 'https://notarium.tr',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://notarium.tr',
   },
   
-  // Headers for CORS
+  // Headers for CORS - Cloudflare için optimize edildi
   async headers() {
     return [
       {
@@ -17,7 +18,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
-            value: '*',
+            value: 'https://notarium.tr',
           },
           {
             key: 'Access-Control-Allow-Methods',
@@ -25,7 +26,11 @@ const nextConfig = {
           },
           {
             key: 'Access-Control-Allow-Headers',
-            value: 'Content-Type, Authorization, Cookie',
+            value: 'Content-Type, Authorization, Cookie, X-Requested-With',
+          },
+          {
+            key: 'Access-Control-Allow-Credentials',
+            value: 'true',
           },
         ],
       },

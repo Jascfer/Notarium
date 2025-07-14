@@ -17,15 +17,16 @@ const config = {
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL || 'https://notarium-backend-production.up.railway.app/auth/google/callback',
   
-  // Frontend URLs
+  // Frontend URLs - Cloudflare ile uyumlu
   FRONTEND_URL: process.env.FRONTEND_URL || 'https://notarium.tr',
   FRONTEND_URL_WWW: process.env.FRONTEND_URL_WWW || 'https://www.notarium.tr',
   FRONTEND_URL_LOCAL: process.env.FRONTEND_URL_LOCAL || 'http://localhost:3000',
   
-  // Cookie Settings
+  // Cookie Settings - Cloudflare için optimize edildi
   COOKIE_DOMAIN: process.env.COOKIE_DOMAIN || '.notarium.tr',
   COOKIE_SECURE: process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === 'production',
   COOKIE_SAME_SITE: process.env.COOKIE_SAME_SITE || (process.env.NODE_ENV === 'production' ? 'none' : 'lax'),
+  COOKIE_MAX_AGE: 86400000, // 1 gün (rehberdeki öneri)
   
   // API URLs
   BACKEND_URL: process.env.BACKEND_URL || 'https://notarium-backend-production.up.railway.app',
@@ -34,11 +35,13 @@ const config = {
   isProduction: process.env.NODE_ENV === 'production',
   isDevelopment: process.env.NODE_ENV === 'development',
   
-  // Allowed origins for CORS
+  // Allowed origins for CORS - Cloudflare ile uyumlu
   getAllowedOrigins: () => [
     config.FRONTEND_URL,
     config.FRONTEND_URL_WWW,
     config.FRONTEND_URL_LOCAL,
+    // Railway test için geçici olarak ekle
+    'https://notarium.up.railway.app',
     'https://*.preview.devprod.cloudflare.dev',
     'https://*.workers.dev'
   ]

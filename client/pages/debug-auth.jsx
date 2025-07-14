@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function DebugAuth() {
-  const { user, login, logout } = useAuth();
+  const { user, login, logout, API_URL } = useAuth();
   const [testResults, setTestResults] = useState({});
   const [loading, setLoading] = useState(false);
-
-  const API_URL = 'https://notarium-backend-production.up.railway.app';
 
   const runTests = async () => {
     setLoading(true);
@@ -15,7 +13,9 @@ export default function DebugAuth() {
     try {
       // Test 1: Backend health check
       console.log('Test 1: Backend health check');
-      const healthRes = await fetch(`${API_URL}/`);
+      const healthRes = await fetch(`${API_URL}/`, {
+        credentials: 'include'
+      });
       results.healthCheck = {
         success: healthRes.ok,
         status: healthRes.status,
@@ -45,12 +45,13 @@ export default function DebugAuth() {
         data: meData
       };
 
-      // Test 4: Cookies
+      // Test 4: Cookies - Cloudflare test
       console.log('Test 4: Cookies');
       const cookies = document.cookie;
       results.cookies = {
         cookies: cookies,
-        hasSessionCookie: cookies.includes('connect.sid')
+        hasSessionCookie: cookies.includes('connect.sid'),
+        cookieDetails: cookies.split(';').map(c => c.trim())
       };
 
       // Test 5: Session storage
@@ -59,6 +60,15 @@ export default function DebugAuth() {
       results.sessionStorage = {
         sessionId: sessionId,
         hasSessionId: !!sessionId
+      };
+
+      // Test 6: Cloudflare specific tests
+      console.log('Test 6: Cloudflare tests');
+      results.cloudflare = {
+        currentDomain: window.location.hostname,
+        isHTTPS: window.location.protocol === 'https:',
+        userAgent: navigator.userAgent,
+        cookieEnabled: navigator.cookieEnabled
       };
 
     } catch (error) {
@@ -75,9 +85,19 @@ export default function DebugAuth() {
     console.log('Login result:', result);
   };
 
+  const testLoginAdmin = async () => {
+    const result = await login('admin@example.com', 'admin123');
+    console.log('Admin login result:', result);
+  };
+
+  const testLoginFounder = async () => {
+    const result = await login('founder@example.com', 'founder123');
+    console.log('Founder login result:', result);
+  };
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Auth Debug Panel</h1>
+      <h1 className="text-2xl font-bold mb-4">Auth Debug Panel - Cloudflare Test</h1>
       
       <div className="mb-4">
         <button 
@@ -92,7 +112,21 @@ export default function DebugAuth() {
           onClick={testLogin}
           className="bg-green-500 text-white px-4 py-2 rounded mr-2"
         >
-          Test Login
+          Test Login (User)
+        </button>
+        
+        <button 
+          onClick={testLoginAdmin}
+          className="bg-yellow-500 text-white px-4 py-2 rounded mr-2"
+        >
+          Test Login (Admin)
+        </button>
+        
+        <button 
+          onClick={testLoginFounder}
+          className="bg-purple-500 text-white px-4 py-2 rounded mr-2"
+        >
+          Test Login (Founder)
         </button>
         
         <button 
@@ -124,6 +158,18 @@ export default function DebugAuth() {
           <p><strong>Cookies Enabled:</strong> {navigator.cookieEnabled}</p>
           <p><strong>Current URL:</strong> {window.location.href}</p>
           <p><strong>Origin:</strong> {window.location.origin}</p>
+          <p><strong>Protocol:</strong> {window.location.protocol}</p>
+          <p><strong>Hostname:</strong> {window.location.hostname}</p>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold mb-2">Cloudflare Checklist</h2>
+        <div className="bg-gray-100 p-2 rounded">
+          <p>✅ <strong>HTTPS:</strong> {window.location.protocol === 'https:' ? 'Yes' : 'No'}</p>
+          <p>✅ <strong>Domain:</strong> {window.location.hostname.includes('notarium.tr') ? 'Correct' : 'Wrong'}</p>
+          <p>✅ <strong>Cookies:</strong> {navigator.cookieEnabled ? 'Enabled' : 'Disabled'}</p>
+          <p>✅ <strong>Session Cookie:</strong> {document.cookie.includes('connect.sid') ? 'Present' : 'Missing'}</p>
         </div>
       </div>
     </div>
