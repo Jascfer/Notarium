@@ -42,9 +42,36 @@ const config = {
     config.FRONTEND_URL_LOCAL,
     // Railway test için geçici olarak ekle
     'https://notarium.up.railway.app',
+    // Cloudflare preview domains - daha spesifik pattern'ler
+    'https://preview.devprod.cloudflare.dev',
     'https://*.preview.devprod.cloudflare.dev',
-    'https://*.workers.dev'
-  ]
+    'https://*.workers.dev',
+    'https://*.pages.dev',
+    // Development için
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000'
+  ],
+  
+  // CORS origin check function - daha gelişmiş pattern matching
+  isOriginAllowed: (origin) => {
+    if (!origin) return true; // Allow requests with no origin
+    
+    const allowedOrigins = config.getAllowedOrigins();
+    
+    return allowedOrigins.some(allowedOrigin => {
+      // Exact match
+      if (allowedOrigin === origin) return true;
+      
+      // Wildcard pattern matching
+      if (allowedOrigin.includes('*')) {
+        const pattern = allowedOrigin.replace('*', '');
+        return origin.includes(pattern);
+      }
+      
+      return false;
+    });
+  }
 };
 
 module.exports = config; 

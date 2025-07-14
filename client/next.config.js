@@ -3,13 +3,6 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   
-  // Environment variables - Cloudflare ile uyumlu
-  env: {
-    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'https://notarium.tr',
-    NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL || 'https://notarium.tr',
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://notarium.tr',
-  },
-  
   // Headers for CORS - Cloudflare için optimize edildi
   async headers() {
     return [

@@ -22,9 +22,8 @@ BACKEND_URL=https://notarium-backend-production.up.railway.app
 Railway'de frontend projeniz için şu environment variables'ları ayarlayın:
 
 ```env
-NEXT_PUBLIC_BACKEND_URL=https://notarium.tr
-NEXT_PUBLIC_SOCKET_URL=https://notarium.tr
-NEXT_PUBLIC_API_URL=https://notarium.tr
+NEXT_PUBLIC_BACKEND_URL=https://notarium-backend-production.up.railway.app
+NEXT_PUBLIC_SOCKET_URL=https://notarium-backend-production.up.railway.app
 ```
 
 ## Cloudflare Ayarları
@@ -49,11 +48,20 @@ api.notarium.tr → Backend (notarium-backend-production.up.railway.app)
 ### WebSocket Desteği
 - **Network > WebSockets**: ✅ Açık
 
+## API Routing Yapısı
+
+Frontend artık local API routes kullanıyor:
+- `/api/auth/*` → Backend `/auth/*` endpoint'lerine proxy
+- `/api/notes/*` → Backend `/notes/*` endpoint'lerine proxy
+- `/api/quiz/*` → Backend `/quiz/*` endpoint'lerine proxy
+
+Bu sayede CORS sorunları çözülüyor ve Cloudflare Worker üzerinden geçiş sağlanıyor.
+
 ## Test Kontrol Listesi
 
 ### 1. Tarayıcı DevTools Kontrolleri
 - **Application → Cookies → https://notarium.tr** altında `connect.sid` görünüyor mu?
-- **Network → /auth/me → Request Headers → Cookie** satırı var mı?
+- **Network → /api/auth/me → Request Headers → Cookie** satırı var mı?
 
 ### 2. Backend Log Kontrolleri
 - **Auth/me - req.session** çıktısında user geliyor mu?
@@ -99,4 +107,5 @@ node create-test-user.js
 1. **Railway'de environment variables** eksiksiz ve doğru girilmeli
 2. **Cloudflare ile test** yaparken sadece `notarium.tr` üzerinden test edin
 3. **HTTPS** kullanımı zorunlu (Railway & Cloudflare)
-4. **Cookie domain** ayarları cross-domain için optimize edilmeli 
+4. **Cookie domain** ayarları cross-domain için optimize edilmeli
+5. **Frontend artık local API routes** kullanıyor, direct backend calls yok 

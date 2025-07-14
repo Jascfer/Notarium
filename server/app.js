@@ -27,13 +27,7 @@ const corsOptions = {
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
     
-    const allowedOrigins = config.getAllowedOrigins();
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (allowedOrigin.includes('*')) {
-        return origin.includes(allowedOrigin.replace('*', ''));
-      }
-      return origin === allowedOrigin;
-    });
+    const isAllowed = config.isOriginAllowed(origin);
     
     if (isAllowed) {
       return callback(null, true);

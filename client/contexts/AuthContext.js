@@ -2,8 +2,8 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
-// Environment configuration
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://notarium-backend-production.up.railway.app';
+// Environment configuration - Her zaman local API routes kullan
+const API_URL = '/api'; // Force local API routes
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://notarium-backend-production.up.railway.app';
 
 export function AuthProvider({ children }) {

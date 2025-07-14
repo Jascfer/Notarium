@@ -13,7 +13,7 @@ export default function DebugAuth() {
     try {
       // Test 1: Backend health check
       console.log('Test 1: Backend health check');
-      const healthRes = await fetch(`${API_URL}/`, {
+      const healthRes = await fetch(`${API_URL}/auth/test`, {
         credentials: 'include'
       });
       results.healthCheck = {
