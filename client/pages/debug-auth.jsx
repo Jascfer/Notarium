@@ -17,7 +17,8 @@ function DebugAuthComponent() {
   // Check if we're on the client side
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    console.log('DebugAuth - API_URL:', API_URL);
+  }, [API_URL]);
 
   const runTests = async () => {
     setLoading(true);
