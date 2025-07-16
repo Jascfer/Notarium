@@ -292,12 +292,36 @@ app.use('*', (req, res) => {
 
 // Server start
 const PORT = config.PORT;
-server.listen(PORT, () => {
-  console.log(`🚀 Notarium Backend Server running on port ${PORT}`);
-  console.log(`📊 Environment: ${config.NODE_ENV}`);
-  console.log(`🔗 Backend URL: ${config.BACKEND_URL}`);
-  console.log(`🌐 Frontend URL: ${config.FRONTEND_URL}`);
-  console.log(`🍪 Cookie Domain: ${config.COOKIE_DOMAIN}`);
-  console.log(`🔒 Cookie Secure: ${config.COOKIE_SECURE}`);
-  console.log(`🌍 Cookie SameSite: ${config.COOKIE_SAME_SITE}`);
-});
+
+// Founder setup script'ini import et
+const { setupFounder } = require('./setup-founder');
+
+async function startServer() {
+  try {
+    // Production'da founder rolünü ata
+    if (config.isProduction) {
+      console.log('👑 Production ortamında founder rolü kontrol ediliyor...');
+      try {
+        await setupFounder();
+      } catch (error) {
+        console.log('⚠️  Founder rolü atama hatası (devam ediliyor):', error.message);
+      }
+    }
+    
+    // Server'ı başlat
+    server.listen(PORT, () => {
+      console.log(`🚀 Notarium Backend Server running on port ${PORT}`);
+      console.log(`📊 Environment: ${config.NODE_ENV}`);
+      console.log(`🔗 Backend URL: ${config.BACKEND_URL}`);
+      console.log(`🌐 Frontend URL: ${config.FRONTEND_URL}`);
+      console.log(`🍪 Cookie Domain: ${config.COOKIE_DOMAIN}`);
+      console.log(`🔒 Cookie Secure: ${config.COOKIE_SECURE}`);
+      console.log(`🌍 Cookie SameSite: ${config.COOKIE_SAME_SITE}`);
+    });
+  } catch (error) {
+    console.error('❌ Server başlatma hatası:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
